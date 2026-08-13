@@ -33,6 +33,10 @@ pub fn apply_reasoning_wire_control(body: &mut Value, model: &str, reduce_reason
             obj.remove("thinking");
             obj.insert("reasoning_effort".into(), Value::String("low".into()));
         }
+        Some(op_orchestrator::ReasoningWireControl::ReasoningEffortNone) => {
+            obj.remove("thinking");
+            obj.insert("reasoning_effort".into(), Value::String("none".into()));
+        }
         None => {}
     }
 }

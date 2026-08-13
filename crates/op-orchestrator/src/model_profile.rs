@@ -20,6 +20,8 @@ pub enum ReasoningWireControl {
     ThinkingDisabled,
     /// `reasoning_effort: "low"` (Kimi K3; `thinking` is unsupported).
     ReasoningEffortLow,
+    /// `reasoning_effort: "none"` (OpenAI GPT-5.6 family).
+    ReasoningEffortNone,
 }
 
 /// 一个模型的能力画像。
@@ -307,6 +309,9 @@ pub fn resolve_model_profile(model_id: &str) -> ModelProfile {
 ///    唯独上万 token 的 `batch_design` 必然截断,表现为"探索完就没下文"。
 ///
 /// 收录依据(每一条都要有出处,不靠猜):
+/// - OpenAI GPT-5.6:官方模型页
+///   <https://developers.openai.com/api/docs/models/gpt-5.6-sol>
+///   同时列出 Chat Completions 与 `reasoning.effort: none`。
 /// - MiniMax M 系 / 旧 abab:MiniMax 专属 `thinking` 字段,线上实测接受。
 /// - GLM-4.5+ / GLM-5.x:curl 对 ark glm-5.2 验证,关思考后 reasoning_tokens=0、
 ///   content 为干净 JSON。
@@ -323,6 +328,9 @@ pub fn reasoning_wire_control(model_id: &str) -> Option<ReasoningWireControl> {
         None => model_id,
     };
     let lower = normalized.to_ascii_lowercase();
+    if lower.starts_with("gpt-5.6") {
+        return Some(ReasoningWireControl::ReasoningEffortNone);
+    }
     if lower.contains("kimi-k3") {
         return Some(ReasoningWireControl::ReasoningEffortLow);
     }
@@ -381,8 +389,13 @@ mod tests {
         assert!(accepts_thinking_body_field("deepseek-v4-pro"));
         assert!(accepts_thinking_body_field("deepseek-v4-flash"));
         assert!(accepts_thinking_body_field("deepseek-reasoner"));
-        // Endpoints that would 400 on an unknown body field stay out.
+        // GPT-5.6 uses `reasoning_effort`, never `thinking`.
         assert!(!accepts_thinking_body_field("gpt-5.6-sol"));
+        assert_eq!(
+            reasoning_wire_control("gpt-5.6-sol"),
+            Some(ReasoningWireControl::ReasoningEffortNone)
+        );
+        // Endpoints that would 400 on an unknown body field stay out.
         assert!(!accepts_thinking_body_field("qwen3-coder-plus"));
         assert!(!accepts_thinking_body_field("claude-opus-5"));
         assert!(!accepts_thinking_body_field(""));
@@ -408,7 +421,13 @@ mod tests {
     /// the wire, which is exactly how deepseek-v4-pro regressed.
     #[test]
     fn every_reasoning_model_we_reduce_can_express_it() {
-        for model in ["deepseek-v4-pro", "deepseek-v4-flash", "glm-5.2", "kimi-k3"] {
+        for model in [
+            "gpt-5.6",
+            "deepseek-v4-pro",
+            "deepseek-v4-flash",
+            "glm-5.2",
+            "kimi-k3",
+        ] {
             assert!(
                 resolve_model_profile(model).thinking_disabled,
                 "{model} profile should ask for thinking off"

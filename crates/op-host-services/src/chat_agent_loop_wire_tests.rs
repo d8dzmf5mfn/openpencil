@@ -50,6 +50,13 @@ fn capture_agent_body(model: &str) -> Value {
 
 #[test]
 fn agent_loop_uses_the_same_mutually_exclusive_reasoning_controls_as_classic() {
+    let gpt_5_6 = capture_agent_body("gpt-5.6");
+    assert_eq!(gpt_5_6["reasoning_effort"], "none");
+    assert!(
+        gpt_5_6.get("thinking").is_none(),
+        "GPT-5.6 request: {gpt_5_6}"
+    );
+
     let k3 = capture_agent_body("kimi-k3");
     assert_eq!(k3["reasoning_effort"], "low");
     assert!(k3.get("thinking").is_none(), "K3 request: {k3}");

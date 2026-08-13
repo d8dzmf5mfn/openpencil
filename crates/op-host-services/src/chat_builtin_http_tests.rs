@@ -535,6 +535,16 @@ fn classic_kimi_k3_request_uses_only_low_reasoning_effort() {
 }
 
 #[test]
+fn classic_gpt_5_6_request_disables_reasoning_with_none() {
+    let body = capture_classic_openai_body("gpt-5.6", ThinkingMode::Disabled);
+    assert_eq!(body["reasoning_effort"], "none");
+    assert!(
+        body.get("thinking").is_none(),
+        "GPT-5.6 uses `reasoning_effort`, not `thinking`: {body}"
+    );
+}
+
+#[test]
 fn parse_anthropic_sse_data_extracts_text_delta() {
     let data = r#"{"type":"content_block_delta","delta":{"type":"text_delta","text":"hello"}}"#;
     assert_eq!(
