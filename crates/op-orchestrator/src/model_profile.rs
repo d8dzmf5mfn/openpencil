@@ -454,9 +454,16 @@ mod tests {
         ),
         ("qwen-plus", "no verified thinking-disable field"),
         ("qwen3-coder-plus", "no verified thinking-disable field"),
-        ("doubao-seed-2.0-pro", "no verified thinking-disable field"),
+        (
+            "doubao-seed-2-0-pro-260215",
+            "no verified thinking-disable field",
+        ),
         ("ark-code-latest", "no verified thinking-disable field"),
-        ("mimo-v2-pro", "no verified thinking-disable field"),
+        ("mimo-v2.5-pro", "no verified thinking-disable field"),
+        (
+            "Qwen/Qwen3.5-35B-A3B",
+            "ModelScope endpoint has no verified thinking-disable field",
+        ),
         ("step-3.5-flash", "no verified thinking-disable field"),
         ("step-3-coding", "no verified thinking-disable field"),
         (
